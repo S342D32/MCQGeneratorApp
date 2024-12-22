@@ -6,6 +6,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const fs = require('fs').promises;
+const path = require('path');
+
+// Ensure feedback directory exists
+const feedbackDir = path.join(__dirname, 'feedback');
+const feedbackFile = path.join(feedbackDir, 'feedback.json');
+
+
 // Middleware
 app.use(cors({
     origin: 'https://mcqgeneratorapp232.onrender.com',
@@ -128,4 +136,63 @@ app.listen(PORT, async () => {
     } else {
         console.log('Server started but API connection test failed - check your API key');
     }
+});
+
+
+async function ensureFeedbackFile() {
+  try {
+    await fs.mkdir(feedbackDir, { recursive: true });
+    try {
+      await fs.access(feedbackFile);
+    } catch {
+      await fs.writeFile(feedbackFile, '[]');
+    }
+  } catch (error) {
+    console.error('Error initializing feedback system:', error);
+  }
+}
+
+ensureFeedbackFile();
+
+// Route to submit feedback
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { rating, feedback, topicSuggestion, timestamp } = req.body;
+
+    if (rating === undefined) {
+      return res.status(400).json({ error: 'Rating is required' });
+    }
+
+    const feedbackData = {
+      rating,
+      feedback,
+      topicSuggestion,
+      timestamp
+    };
+
+    // Read existing feedback
+    const existingData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
+    
+    // Add new feedback
+    existingData.push(feedbackData);
+    
+    // Save updated feedback
+    await fs.writeFile(feedbackFile, JSON.stringify(existingData, null, 2));
+
+    res.status(200).json({ message: 'Feedback submitted successfully' });
+  } catch (error) {
+    console.error('Error saving feedback:', error);
+    res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// Route to get all feedback (for admin purposes)
+app.get('/api/feedback', async (req, res) => {
+  try {
+    const feedbackData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
+    res.json(feedbackData);
+  } catch (error) {
+    console.error('Error reading feedback:', error);
+    res.status(500).json({ error: 'Failed to retrieve feedback' });
+  }
 });
