@@ -23,8 +23,7 @@ function App() {
             path="/" 
             element={
               <div className="container mx-auto p-6 text-center mt-8">
-                <div className="bg-gradient-to-br from-blue-200 to-white bg-white bg-opacity-90 p-8  rounded-lg shadow-md shadow-xl">
-
+                <div className="bg-gradient-to-br from-blue-200 to-white bg-white bg-opacity-90 p-8 rounded-lg shadow-md shadow-xl">
                   <h1 className="text-4xl font-extrabold text-gray-800 mb-6">
                     Welcome to Your Personalized Learning Platform
                   </h1>
@@ -46,13 +45,30 @@ function App() {
                     </Link>
                   </div>
                 </div>
+                <div className="mt-12 bg-gradient-to-br from-gray-50 to-gray-200 p-6 rounded-lg shadow-md">
+                  <h2 className="text-2xl font-bold text-gray-700 mb-4">About the App</h2>
+                  <p className="text-gray-600 mb-2">
+                    Please note that this app may take some time to generate questions because it uses a free API and is deployed on a free platform.
+                  </p>
+                  <p className="text-gray-600 mb-2">
+                    The app is under active development, and many exciting features are on their way. 
+                  </p>
+                  <p className="text-gray-600 mb-4">
+                    Your valuable feedback is crucial to enhance and improve this platform.
+                  </p>
+                  <p className="text-gray-600 font-semibold">
+                    Thank you, 
+                  </p>
+                  <p className="text-gray-600 font-semibold">
+                    Sourajit Nayak, Creator
+                  </p>
+                </div>
               </div>
             }
           />
           <Route path="/mcq" element={<MCQGenerator />} />
           <Route path="/feedback" element={<Feedback />} />
         </Routes>
-
       </div>
     </Router>
   );
