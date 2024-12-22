@@ -24,7 +24,7 @@ const MCQGenerator = () => {
 
   const fetchMCQQuestions = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/generate-mcq', {
+      const response = await axios.post('https://mcqgeneratorapp.onrender.com/api/generate-mcq', {
         topic,
         subTopic,
         numberOfQuestions
