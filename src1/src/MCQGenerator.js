@@ -10,7 +10,7 @@ const MCQGenerator = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [retryMode, setRetryMode] = useState(false); // New state for retry mode
+  const [ setRetryMode] = useState(false); // New state for retry mode
   const [score, setScore] = useState(0);
   const [userName, setUserName] = useState('');
 
@@ -24,7 +24,7 @@ const MCQGenerator = () => {
 
   const fetchMCQQuestions = async () => {
     try {
-      const response = await axios.post('https://mcqgeneratorapp.onrender.com/api/generate-mcq', {
+      const response = await axios.post('http://localhost:5000/api/generate-mcq', {
         topic,
         subTopic,
         numberOfQuestions
@@ -68,97 +68,103 @@ const MCQGenerator = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-2xl">
       {!questions.length ? (
-        <div>
-          <h2 className="text-2xl mb-4">MCQ Quiz Setup</h2>
-          <div className="mb-4">
-            <label>Your Name:</label>
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label>Select Topic:</label>
-            <select
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">Select Topic</option>
-              {Object.keys(topics).map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-          {topic && (
-            <div className="mb-4">
-              <label>Select Subtopic:</label>
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <h2 className="text-xl sm:text-2xl mb-4 font-semibold">MCQ Quiz Setup</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Your Name:</label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Select Topic:</label>
               <select
-                value={subTopic}
-                onChange={(e) => setSubTopic(e.target.value)}
-                className="w-full p-2 border rounded"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select Subtopic</option>
-                {topics[topic].map(st => (
-                  <option key={st} value={st}>{st}</option>
+                <option value="">Select Topic</option>
+                {Object.keys(topics).map(t => (
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
-          )}
-          {subTopic && (
-            <div className="mb-4">
-              <label>Number of Questions:</label>
-              <input
-                type="number"
-                value={numberOfQuestions}
-                onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
-                min="1"
-                max="20"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-          )}
-          {subTopic && (
-            <button
-              onClick={fetchMCQQuestions}
-              className="w-full bg-blue-500 text-white p-2 rounded"
-            >
-              Generate Quiz
-            </button>
-          )}
+            {topic && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select Subtopic:</label>
+                <select
+                  value={subTopic}
+                  onChange={(e) => setSubTopic(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Subtopic</option>
+                  {topics[topic].map(st => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {subTopic && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Questions:</label>
+                <input
+                  type="number"
+                  value={numberOfQuestions}
+                  onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                  min="1"
+                  max="20"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
+            {subTopic && (
+              <button
+                onClick={fetchMCQQuestions}
+                className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
+              >
+                Generate Quiz
+              </button>
+            )}
+          </div>
         </div>
       ) : !showResults ? (
-        <div>
-          <h2 className="text-xl mb-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg sm:text-xl mb-4 font-semibold">
             Question {currentQuestionIndex + 1} of {questions.length}
           </h2>
-          <div className="bg-white p-6 rounded shadow">
-            <p className="mb-4">{questions[currentQuestionIndex].question}</p>
-            {questions[currentQuestionIndex].options.map((option, optionIndex) => (
-              <div
-                key={optionIndex}
-                onClick={() => handleAnswerSelection(currentQuestionIndex, option)}
-                className={`p-2 mb-2 border rounded cursor-pointer ${
-                  selectedAnswers[currentQuestionIndex] === option
-                    ? 'bg-blue-200'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                {option}
-              </div>
-            ))}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
+            <p className="mb-4 text-base sm:text-lg font-medium text-gray-800">
+              {questions[currentQuestionIndex].question}
+            </p>
+            <div className="space-y-2">
+              {questions[currentQuestionIndex].options.map((option, optionIndex) => (
+                <div
+                  key={optionIndex}
+                  onClick={() => handleAnswerSelection(currentQuestionIndex, option)}
+                  className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 text-sm sm:text-base ${
+                    selectedAnswers[currentQuestionIndex] === option
+                      ? 'bg-blue-100 border-blue-400 text-blue-700'
+                      : 'hover:bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  {option}
+                </div>
+              ))}
+            </div>
           </div>
           <div className="mt-4 flex justify-between">
             {currentQuestionIndex > 0 && (
               <button
                 onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                className="bg-gray-500 text-white p-2 rounded"
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm sm:text-base"
               >
                 Previous
               </button>
@@ -167,7 +173,7 @@ const MCQGenerator = () => {
               <button
                 onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                 disabled={selectedAnswers[currentQuestionIndex] === null}
-                className="bg-blue-500 text-white p-2 rounded disabled:opacity-50"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Next
               </button>
@@ -175,67 +181,51 @@ const MCQGenerator = () => {
               <button
                 onClick={calculateScore}
                 disabled={selectedAnswers[currentQuestionIndex] === null}
-                className="bg-green-500 text-white p-2 rounded disabled:opacity-50"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Submit Quiz
               </button>
             )}
           </div>
         </div>
-      ) : retryMode ? (
-        <div>
-          <h2 className="text-2xl mb-4">Retry Quiz</h2>
-          {questions.map((question, index) => (
-            <div
-              key={index}
-              className={`mb-4 p-4 rounded ${
-                selectedAnswers[index] === question.correctAnswer
-                  ? 'bg-green-100'
-                  : 'bg-red-100'
-              }`}
-            >
-              <p>{question.question}</p>
-              <p>Your Answer: {selectedAnswers[index]}</p>
-              <p className="font-bold text-lg text-green-600">Correct Answer: {question.correctAnswer}</p>
-              <div>
-  <h2 className="text-2xl mb-4">Quiz Results</h2>
-  <Badge label={`Your Score: ${score}`} />
-  <p className="text-xl mb-4">Your Score: {score} / {questions.length}</p>
-</div>
-
-            </div>
-          ))}
-          <button
-            onClick={resetQuiz}
-            className="w-full bg-blue-500 text-white p-2 rounded mt-4"
-          >
-            Start New Quiz
-          </button>
-        </div>
       ) : (
-        <div>
-          <h2 className="text-2xl mb-4">Quiz Results</h2>
-          <p className="text-xl mb-4">Your Score: {score} / {questions.length}</p>
-          {questions.map((question, index) => (
-            <div
-              key={index}
-              className={`mb-4 p-4 rounded ${
-                selectedAnswers[index] === question.correctAnswer
-                  ? 'bg-green-100'
-                  : 'bg-red-100'
-              }`}
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <h2 className="text-xl sm:text-2xl mb-4 font-semibold">Quiz Results</h2>
+          <div className="mb-6">
+            <Badge name={userName} score={score} totalQuestions={questions.length} />
+          </div>
+          <div className="space-y-4">
+            {questions.map((question, index) => (
+              <div
+                key={index}
+                className={`p-4 rounded-lg ${
+                  selectedAnswers[index] === question.correctAnswer
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}
+              >
+                <p className="text-sm sm:text-base mb-2">{question.question}</p>
+                <p className="text-sm sm:text-base">Your Answer: {selectedAnswers[index]}</p>
+                <p className="font-semibold text-sm sm:text-base text-green-600">
+                  Correct Answer: {question.correctAnswer}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={retryQuiz}
+              className="w-full bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 text-sm sm:text-base"
             >
-              <p>{question.question}</p>
-              <p>Your Answer: {selectedAnswers[index]}</p>
-              <p className="font-bold text-lg text-green-600">Correct Answer: {question.correctAnswer}</p>
-            </div>
-          ))}
-          <button
-            onClick={retryQuiz}
-            className="w-full bg-yellow-500 text-white p-2 rounded mt-4"
-          >
-            Retry Quiz
-          </button>
+              Retry Quiz
+            </button>
+            <button
+              onClick={resetQuiz}
+              className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 text-sm sm:text-base"
+            >
+              Start New Quiz
+            </button>
+          </div>
         </div>
       )}
     </div>
