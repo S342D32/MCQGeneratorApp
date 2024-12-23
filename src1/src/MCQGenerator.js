@@ -248,56 +248,50 @@ const MCQGenerator = () => {
                 />
               </div>
             )}
-            {subTopic && (
-              <button
-                onClick={fetchMCQQuestions}
-                className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
-              >
-                Generate Quiz
-              </button>
-             {subTopic && (
-                <>
-  <button
-    onClick={fetchMCQQuestions}
-    className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
-  >
-    Generate Quiz
-  </button>
-  <div className="mt-6 bg-white rounded-lg shadow-md p-4">
-    <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
-    <div className="space-y-3">
-      <div className="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🏆</span>
-          <span className="font-medium">Gold</span>
+           {subTopic && (
+              <>
+                <button
+                  onClick={fetchMCQQuestions}
+                  className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
+                >
+                  Generate Quiz
+                </button>
+                <div className="mt-6 bg-white rounded-lg shadow-md p-4">
+                  <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🏆</span>
+                        <span className="font-medium">Gold</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Score 20+ correct answers in a 25+ question quiz
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg border bg-gray-100 border-gray-400">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🥈</span>
+                        <span className="font-medium">Silver</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Score 10+ correct answers in a 15+ question quiz
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg border bg-orange-100 border-orange-400">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🥉</span>
+                        <span className="font-medium">Bronze</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Complete any quiz
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-gray-600 mt-1">
-          Score 20+ correct answers in a 25+ question quiz
-        </p>
-      </div>
-      <div className="p-3 rounded-lg border bg-gray-100 border-gray-400">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🥈</span>
-          <span className="font-medium">Silver</span>
-        </div>
-        <p className="text-sm text-gray-600 mt-1">
-          Score 10+ correct answers in a 15+ question quiz
-        </p>
-      </div>
-      <div className="p-3 rounded-lg border bg-orange-100 border-orange-400">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🥉</span>
-          <span className="font-medium">Bronze</span>
-        </div>
-        <p className="text-sm text-gray-600 mt-1">
-          Complete any quiz
-        </p>
-      </div>
-    </div>
-  </div>
-  </>
-)}
-
       ) : !showResults ? (
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <h2 className="text-lg sm:text-xl mb-4 font-semibold">
