@@ -294,6 +294,7 @@ const MCQGenerator = () => {
       </div>
     </div>
   </div>
+  </>
 )}
 
       ) : !showResults ? (
