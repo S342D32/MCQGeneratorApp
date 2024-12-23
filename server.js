@@ -80,7 +80,7 @@ app.post('/api/generate-mcq', async (req, res) => {
             {
                 contents: [{
                     parts: [{
-                        text: `Generate ${numberOfQuestions} multiple choice questions about ${subTopic} in ${topic}. 
+                        text: `Create ${numberOfQuestions} multiple choice questions in the style of ${topic} competitive exams, focusing on ${subTopic}. 
                         Format each question exactly like this example, maintaining the exact structure:
                         [
                             {
