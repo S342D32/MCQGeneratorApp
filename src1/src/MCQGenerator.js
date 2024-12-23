@@ -255,7 +255,14 @@ const MCQGenerator = () => {
               >
                 Generate Quiz
               </button>
-             <div className="mt-6 bg-white rounded-lg shadow-md p-4">
+             {subTopic && (
+  <button
+    onClick={fetchMCQQuestions}
+    className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
+  >
+    Generate Quiz
+  </button>
+  <div className="mt-6 bg-white rounded-lg shadow-md p-4">
     <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
     <div className="space-y-3">
       <div className="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
@@ -287,6 +294,8 @@ const MCQGenerator = () => {
       </div>
     </div>
   </div>
+)}
+
       ) : !showResults ? (
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <h2 className="text-lg sm:text-xl mb-4 font-semibold">
