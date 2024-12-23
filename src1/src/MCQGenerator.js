@@ -132,6 +132,32 @@ const MCQGenerator = () => {
               >
                 Generate Quiz
               </button>
+             <div class="mt-6 bg-white rounded-lg shadow-md p-4">
+  <h3 class="text-lg font-semibold mb-3">Badge System 🎖️</h3>
+  <div class="space-y-3">
+    <div class="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🏆</span>
+        <span class="font-medium">Gold</span>
+      </div>
+      <p class="text-sm text-gray-600 mt-1">Score 20+ correct answers in a 25+ question quiz</p>
+    </div>
+    <div class="p-3 rounded-lg border bg-gray-100 border-gray-400">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🥈</span>
+        <span class="font-medium">Silver</span>
+      </div>
+      <p class="text-sm text-gray-600 mt-1">Score 10+ correct answers in a 15+ question quiz</p>
+    </div>
+    <div class="p-3 rounded-lg border bg-orange-100 border-orange-400">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🥉</span>
+        <span class="font-medium">Bronze</span>
+      </div>
+      <p class="text-sm text-gray-600 mt-1">Complete any quiz</p>
+    </div>
+  </div>
+</div>
             )}
           </div>
         </div>
