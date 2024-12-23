@@ -12,8 +12,13 @@ const Badge = ({ name = "User", score = 0, totalQuestions = 0 }) => {
         gradient: "url(#silverGradient)",
         achievement: "Silver Achievement",
       };
+    } else {
+      return {
+        type: "bronze",
+        gradient: "url(#bronzeGradient)",
+        achievement: "Bronze Achievement",
+      };
     }
-    return null;
   };
 
   const generateBadgeSvg = (badgeInfo) => `
@@ -29,6 +34,11 @@ const Badge = ({ name = "User", score = 0, totalQuestions = 0 }) => {
           <stop offset="50%" style="stop-color:#FFED4A" />
           <stop offset="100%" style="stop-color:#DAA520" />
         </linearGradient>
+        <linearGradient id="bronzeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#CD7F32" />
+          <stop offset="50%" style="stop-color:#E8B88A" />
+          <stop offset="100%" style="stop-color:#B8732F" />
+        </linearGradient>
       </defs>
       <circle cx="150" cy="200" r="120" fill="${badgeInfo.gradient}" stroke="#2c3e50" stroke-width="8" />
       <circle cx="150" cy="200" r="100" fill="none" stroke="#2c3e50" stroke-width="4" />
@@ -41,12 +51,9 @@ const Badge = ({ name = "User", score = 0, totalQuestions = 0 }) => {
 
   const downloadBadge = () => {
     const badgeInfo = getBadgeInfo();
-    if (!badgeInfo) return;
-
     const svgContent = generateBadgeSvg(badgeInfo);
     const blob = new Blob([svgContent], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
     link.href = url;
     link.download = `${badgeInfo.type}-badge.svg`;
@@ -57,15 +64,7 @@ const Badge = ({ name = "User", score = 0, totalQuestions = 0 }) => {
   };
 
   const badgeInfo = getBadgeInfo();
-  if (!badgeInfo)
-    return (
-      <div className="text-center mt-8">
-        <h3 className="text-lg font-bold text-gray-500">
-          Keep going! Earn a badge by improving your score.
-        </h3>
-      </div>
-    );
-
+  
   return (
     <div className="mt-8 text-center">
       <h3 className="text-2xl font-bold mb-4">
