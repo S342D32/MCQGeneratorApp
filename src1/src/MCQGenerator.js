@@ -256,6 +256,7 @@ const MCQGenerator = () => {
                 Generate Quiz
               </button>
              {subTopic && (
+                <>
   <button
     onClick={fetchMCQQuestions}
     className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
