@@ -15,12 +15,135 @@ const MCQGenerator = () => {
   const [userName, setUserName] = useState('');
 
   const topics = {
-    'Computer Science': ['Programming', 'Algorithms', 'Data Structures'],
-    'Mathematics': ['Algebra', 'Geometry', 'Calculus'],
-    'Physics': ['Mechanics', 'Electromagnetism', 'Quantum Physics'],
-    'General-knowledge': ['History', 'Geography', 'Science', 'Literature', 'Sports', 'Current Affairs'],
-    'SQL-queries': ['SQL all operator', 'PostgreSQL', 'BASICS']
-  };
+  'Computer Science': [
+    'Programming Languages',
+    'Data Structures',
+    'Algorithms',
+    'Database Management',
+    'Operating Systems',
+    'Computer Networks',
+    'Software Engineering',
+    'Web Development',
+    'Cybersecurity'
+  ],
+  'Mathematics': [
+    'Algebra',
+    'Geometry',
+    'Calculus',
+    'Trigonometry',
+    'Statistics',
+    'Probability',
+    'Number Theory',
+    'Linear Algebra',
+    'Discrete Mathematics'
+  ],
+  'Physics': [
+    'Mechanics',
+    'Electromagnetism',
+    'Thermodynamics',
+    'Optics',
+    'Modern Physics',
+    'Nuclear Physics',
+    'Quantum Physics',
+    'Waves and Oscillations'
+  ],
+  'Chemistry': [
+    'Organic Chemistry',
+    'Inorganic Chemistry',
+    'Physical Chemistry',
+    'Analytical Chemistry',
+    'Biochemistry',
+    'Environmental Chemistry'
+  ],
+  'Biology': [
+    'Cell Biology',
+    'Genetics',
+    'Ecology',
+    'Human Physiology',
+    'Botany',
+    'Zoology',
+    'Microbiology',
+    'Biotechnology'
+  ],
+  'English': [
+    'Grammar',
+    'Vocabulary',
+    'Reading Comprehension',
+    'Writing Skills',
+    'Literature',
+    'Communication Skills'
+  ],
+  'General Knowledge': [
+    'Current Affairs',
+    'History',
+    'Geography',
+    'Politics',
+    'Economics',
+    'Sports',
+    'Culture',
+    'Science and Technology'
+  ],
+  'Aptitude': [
+    'Quantitative Ability',
+    'Logical Reasoning',
+    'Verbal Ability',
+    'Data Interpretation',
+    'Problem Solving'
+  ],
+  'Commerce': [
+    'Accounting',
+    'Business Studies',
+    'Economics',
+    'Banking',
+    'Finance',
+    'Marketing',
+    'Business Law'
+  ],
+  'Civil Services': [
+    'Indian Polity',
+    'Indian Economy',
+    'Indian History',
+    'Geography of India',
+    'International Relations',
+    'Environmental Studies',
+    'Science and Technology'
+  ],
+  'Banking': [
+    'Financial Awareness',
+    'Banking Operations',
+    'Computer Knowledge',
+    'Numerical Ability',
+    'Reasoning',
+    'English Language'
+  ],
+  'Engineering': [
+    'Electronics',
+    'Mechanical',
+    'Civil',
+    'Electrical',
+    'Chemical',
+    'Computer Science',
+    'Information Technology'
+  ],
+  'Medical': [
+    'Anatomy',
+    'Physiology',
+    'Biochemistry',
+    'Pathology',
+    'Pharmacology',
+    'Microbiology',
+    'Medicine'
+  ],
+  'Law': [
+    'Constitutional Law',
+    'Criminal Law',
+    'Civil Law',
+    'Corporate Law',
+    'International Law',
+    'Environmental Law',
+    'Human Rights'
+  ]
+};
 
   const fetchMCQQuestions = async () => {
     try {
