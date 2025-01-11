@@ -406,12 +406,7 @@ const MCQGenerator = () => {
             ))}
           </div>
           <div className="mt-6 space-y-3">
-            <button
-              onClick={retryQuiz}
-              className="w-full bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 text-sm sm:text-base"
-            >
-              Retry Quiz
-            </button>
+            
             <button
               onClick={resetQuiz}
               className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 text-sm sm:text-base"
