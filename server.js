@@ -64,6 +64,9 @@ async function testApiConnection() {
 }
 
 
+// Cache for storing generated questions
+const questionsCache = new Map();
+
 
 
 // Modify your existing MCQ generation endpoint
@@ -74,24 +77,28 @@ app.post('/api/generate-mcq', async (req, res) => {
         return res.status(400).json({ error: 'Missing required parameters' });
     }
 
+        // Create cache key
+    const cacheKey = `${topic}-${subTopic}-${numberOfQuestions}`;
+    
+    // Check cache first
+    if (questionsCache.has(cacheKey)) {
+        return res.json({ questions: questionsCache.get(cacheKey) });
+    }
+
     try {
+        // Optimized prompt for faster response
+        const prompt = `Generate ${numberOfQuestions} multiple choice questions about ${subTopic} in ${topic}. Keep questions concise. Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"correct"}]. Questions should be factual and fundamental concepts only.`;
+
         const response = await axios.post(
             GEMINI_API_URL,
             {
                 contents: [{
-                    parts: [{
-                        text: `Create ${numberOfQuestions} multiple choice questions in the style of ${topic} competitive exams, focusing on ${subTopic}. 
-                        Format each question exactly like this example, maintaining the exact structure:
-                        [
-                            {
-                                "question": "What is the capital of France?",
-                                "options": ["London", "Paris", "Berlin", "Madrid"],
-                                "correctAnswer": "Paris"
-                            }
-                        ]
-                        Generate ${numberOfQuestions} questions in this exact format.`
-                    }]
-                }]
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    temperature: 0.3,  // Lower temperature for faster, more focused responses
+                    maxOutputTokens: 1000,  // Limit output size
+                }
             }
         );
 
@@ -113,6 +120,10 @@ app.post('/api/generate-mcq', async (req, res) => {
                 options: q.options.map(opt => opt.trim()),
                 correctAnswer: q.correctAnswer.trim()
             }));
+
+            // Store in cache for 30 minutes
+        questionsCache.set(cacheKey, validatedQuestions);
+        setTimeout(() => questionsCache.delete(cacheKey), 30 * 60 * 1000);
             
             res.json({ questions: validatedQuestions });
         } catch (parseError) {
