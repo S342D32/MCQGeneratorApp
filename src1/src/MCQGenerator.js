@@ -14,6 +14,12 @@ const MCQGenerator = () => {
   const [score, setScore] = useState(0);
   const [userName, setUserName] = useState('');
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [previousScore, setPreviousScore] = useState(null);
+  const [previousTotal, setPreviousTotal] = useState(null);
+
   const topics = {
   'Computer Science': [
     'Programming Languages',
@@ -146,6 +152,8 @@ const MCQGenerator = () => {
 };
 
   const fetchMCQQuestions = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.post('https://mcqgeneratorapp.onrender.com/api/generate-mcq', {
         topic,
@@ -190,8 +198,53 @@ const MCQGenerator = () => {
     setCurrentQuestionIndex(0); // Start from the first question
   };
 
-  return (
+
+    const renderBadgeSystem = () => (
+    <div className="mt-6 bg-white rounded-lg shadow-md p-4">
+      <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
+      <div className="space-y-3">
+        <div className="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🏆</span>
+            <span className="font-medium">Gold</span>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Score 20+ correct answers in a 25+ question quiz
+          </p>
+        </div>
+        <div className="p-3 rounded-lg border bg-gray-100 border-gray-400">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🥈</span>
+            <span className="font-medium">Silver</span>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Score 10+ correct answers in a 15+ question quiz
+          </p>
+        </div>
+        <div className="p-3 rounded-lg border bg-orange-100 border-orange-400">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🥉</span>
+            <span className="font-medium">Bronze</span>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Complete any quiz
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  
+
+   return (
     <div className="container mx-auto p-4 max-w-2xl">
+      {/* Always show the badge if there's a previous score */}
+      {previousScore !== null && previousTotal !== null && (
+        <div className="mb-6">
+          <Badge name={userName} score={previousScore} totalQuestions={previousTotal} />
+        </div>
+      )}
+
       {!questions.length ? (
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl sm:text-2xl mb-4 font-semibold">MCQ Quiz Setup</h2>
@@ -248,48 +301,31 @@ const MCQGenerator = () => {
                 />
               </div>
             )}
-           {subTopic && (
-              <>
+            {subTopic && (
+              <div>
                 <button
                   onClick={fetchMCQQuestions}
-                  className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200 text-sm sm:text-base"
+                  disabled={isLoading}
+                  className={`w-full ${
+                    isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+                  } text-white p-3 rounded-lg transition duration-200 text-sm sm:text-base`}
                 >
-                  Generate Quiz
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Generating Questions...
+                    </div>
+                  ) : (
+                    'Generate Quiz'
+                  )}
                 </button>
-                <div className="mt-6 bg-white rounded-lg shadow-md p-4">
-                  <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-lg border bg-yellow-100 border-yellow-400">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🏆</span>
-                        <span className="font-medium">Gold</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Score 20+ correct answers in a 25+ question quiz
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg border bg-gray-100 border-gray-400">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🥈</span>
-                        <span className="font-medium">Silver</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Score 10+ correct answers in a 15+ question quiz
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg border bg-orange-100 border-orange-400">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🥉</span>
-                        <span className="font-medium">Bronze</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Complete any quiz
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </>
+                {error && (
+                  <p className="mt-2 text-red-500 text-sm">{error}</p>
+                )}
+              </div>
             )}
+            {/* Always show the badge system */}
+            {renderBadgeSystem()}
           </div>
         </div>
       ) : !showResults ? (
