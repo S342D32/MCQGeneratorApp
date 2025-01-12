@@ -63,6 +63,8 @@ async function testApiConnection() {
     }
 }
 
+// Batch size for question generation
+const BATCH_SIZE = 20;
 
 // Cache for storing generated questions
 const questionsCache = new Map();
@@ -77,67 +79,92 @@ app.post('/api/generate-mcq', async (req, res) => {
         return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-        // Create cache key
     const cacheKey = `${topic}-${subTopic}-${numberOfQuestions}`;
     
-    // Check cache first
     if (questionsCache.has(cacheKey)) {
         return res.json({ questions: questionsCache.get(cacheKey) });
     }
 
     try {
-        // Optimized prompt for faster response
-        const prompt = `Generate ${numberOfQuestions} multiple choice questions about ${subTopic} in ${topic}. Keep questions concise. Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"actual correct answer"}]. Questions should be factual and fundamental concepts only.`;
+        const allQuestions = [];
+        const batches = Math.ceil(numberOfQuestions / BATCH_SIZE);
+        
+        // Create an array of promises for parallel execution
+        const batchPromises = Array.from({ length: batches }, async (_, index) => {
+            const questionsInBatch = Math.min(
+                BATCH_SIZE,
+                numberOfQuestions - (index * BATCH_SIZE)
+            );
 
-        const response = await axios.post(
-            GEMINI_API_URL,
-            {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }],
-                generationConfig: {
-                    temperature: 0.3,  // Lower temperature for faster, more focused responses
-                    maxOutputTokens: 1000,  // Limit output size
+            const prompt = `Generate ${questionsInBatch} multiple choice questions about ${subTopic} in ${topic}. 
+                Focus on different aspects for each question. 
+                Keep questions concise and clear.
+                Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"actual correct answer"}]
+                Ensure questions are distinct from each other and cover different concepts.`;
+
+            const response = await axios.post(
+                GEMINI_API_URL,
+                {
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 1000,
+                    }
+                },
+                {
+                    timeout: 30000 // 30 second timeout for each batch
                 }
-            }
-        );
+            );
 
-        let questionsText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        
-        // Extract the JSON array from the response
-        const jsonMatch = questionsText.match(/\[[\s\S]*\]/);
-        if (!jsonMatch) {
-            throw new Error('Invalid response format');
-        }
-        
-        // Parse the JSON array
-        try {
-            const questions = JSON.parse(jsonMatch[0]);
+            let questionsText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            const jsonMatch = questionsText.match(/\[[\s\S]*\]/);
             
-            // Validate the structure of each question
-            const validatedQuestions = questions.map(q => ({
-                question: q.question.trim(),
-                options: q.options.map(opt => opt.trim()),
-                correctAnswer: q.correctAnswer.trim()
-            }));
+            if (!jsonMatch) {
+                throw new Error(`Invalid response format in batch ${index + 1}`);
+            }
 
-            // Store in cache for 30 minutes
+            return JSON.parse(jsonMatch[0]);
+        });
+
+        // Execute batches with rate limiting
+        for (let i = 0; i < batchPromises.length; i++) {
+            try {
+                const batchQuestions = await batchPromises[i];
+                allQuestions.push(...batchQuestions);
+                
+                // Add a small delay between batches to prevent rate limiting
+                if (i < batchPromises.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            } catch (error) {
+                console.error(`Error in batch ${i + 1}:`, error);
+                // Continue with other batches even if one fails
+            }
+        }
+
+        // Validate and format all questions
+        const validatedQuestions = allQuestions.slice(0, numberOfQuestions).map(q => ({
+            question: q.question.trim(),
+            options: q.options.map(opt => opt.trim()),
+            correctAnswer: q.correctAnswer.trim()
+        }));
+
+        // Store in cache for 30 minutes
         questionsCache.set(cacheKey, validatedQuestions);
         setTimeout(() => questionsCache.delete(cacheKey), 30 * 60 * 1000);
-            
-            res.json({ questions: validatedQuestions });
-        } catch (parseError) {
-            console.error('JSON parsing error:', parseError);
-            throw new Error('Failed to parse questions');
-        }
+
+        res.json({ questions: validatedQuestions });
     } catch (error) {
         console.error('MCQ Generation Error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to generate MCQ questions',
             details: error.message
         });
     }
 });
+
 
 app.listen(PORT, async () => {
     console.log(`Server starting on port ${PORT}...`);
