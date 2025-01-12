@@ -87,7 +87,7 @@ app.post('/api/generate-mcq', async (req, res) => {
 
     try {
         // Optimized prompt for faster response
-        const prompt = `Generate ${numberOfQuestions} multiple choice questions about ${subTopic} in ${topic}. Keep questions concise. Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"correct"}]. Questions should be factual and fundamental concepts only.`;
+        const prompt = `Generate ${numberOfQuestions} multiple choice questions about ${subTopic} in ${topic}. Keep questions concise. Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"actual correct answer"}]. Questions should be factual and fundamental concepts only.`;
 
         const response = await axios.post(
             GEMINI_API_URL,
