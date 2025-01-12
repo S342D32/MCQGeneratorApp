@@ -13,7 +13,6 @@ const path = require('path');
 const feedbackDir = path.join(__dirname, 'feedback');
 const feedbackFile = path.join(feedbackDir, 'feedback.json');
 
-
 // Middleware
 app.use(cors({
     origin: 'https://mcqgeneratorapp232.onrender.com',
@@ -64,14 +63,12 @@ async function testApiConnection() {
 }
 
 // Batch size for question generation
-const BATCH_SIZE = 20;
+const BATCH_SIZE = 10;
 
 // Cache for storing generated questions
 const questionsCache = new Map();
 
-
-
-// Modify your existing MCQ generation endpoint
+// MCQ generation endpoint
 app.post('/api/generate-mcq', async (req, res) => {
     const { topic, subTopic, numberOfQuestions } = req.body;
     
@@ -86,76 +83,42 @@ app.post('/api/generate-mcq', async (req, res) => {
     }
 
     try {
-        const allQuestions = [];
-        const batches = Math.ceil(numberOfQuestions / BATCH_SIZE);
+        let allQuestions = [];
+        const remainingQuestions = numberOfQuestions;
         
-        // Create an array of promises for parallel execution
-        const batchPromises = Array.from({ length: batches }, async (_, index) => {
-            const questionsInBatch = Math.min(
-                BATCH_SIZE,
-                numberOfQuestions - (index * BATCH_SIZE)
-            );
-
-            const prompt = `Generate ${questionsInBatch} multiple choice questions about ${subTopic} in ${topic}. 
-                Focus on different aspects for each question. 
-                Keep questions concise and clear.
-                Format: [{"question":"brief question?","options":["a","b","c","d"],"correctAnswer":"actual correct answer"}]
-                Ensure questions are distinct from each other and cover different concepts.`;
-
-            const response = await axios.post(
-                GEMINI_API_URL,
-                {
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 1000,
-                    }
-                },
-                {
-                    timeout: 30000 // 30 second timeout for each batch
-                }
-            );
-
-            let questionsText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            const jsonMatch = questionsText.match(/\[[\s\S]*\]/);
+        // Calculate number of full batches and remainder
+        const fullBatches = Math.floor(remainingQuestions / BATCH_SIZE);
+        const remainderBatch = remainingQuestions % BATCH_SIZE;
+        
+        // Generate full batches
+        for (let i = 0; i < fullBatches; i++) {
+            const batchQuestions = await generateQuestionBatch(topic, subTopic, BATCH_SIZE);
+            allQuestions = [...allQuestions, ...batchQuestions];
             
-            if (!jsonMatch) {
-                throw new Error(`Invalid response format in batch ${index + 1}`);
-            }
-
-            return JSON.parse(jsonMatch[0]);
-        });
-
-        // Execute batches with rate limiting
-        for (let i = 0; i < batchPromises.length; i++) {
-            try {
-                const batchQuestions = await batchPromises[i];
-                allQuestions.push(...batchQuestions);
-                
-                // Add a small delay between batches to prevent rate limiting
-                if (i < batchPromises.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            } catch (error) {
-                console.error(`Error in batch ${i + 1}:`, error);
-                // Continue with other batches even if one fails
+            // Add delay between batches
+            if (i < fullBatches - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
+        
+        // Generate remainder batch if needed
+        if (remainderBatch > 0) {
+            const remainderQuestions = await generateQuestionBatch(topic, subTopic, remainderBatch);
+            allQuestions = [...allQuestions, ...remainderQuestions];
+        }
 
-        // Validate and format all questions
-        const validatedQuestions = allQuestions.slice(0, numberOfQuestions).map(q => ({
-            question: q.question.trim(),
-            options: q.options.map(opt => opt.trim()),
-            correctAnswer: q.correctAnswer.trim()
-        }));
+        // Ensure we have exactly the number of questions requested
+        allQuestions = allQuestions.slice(0, numberOfQuestions);
 
-        // Store in cache for 30 minutes
-        questionsCache.set(cacheKey, validatedQuestions);
+        if (allQuestions.length !== numberOfQuestions) {
+            throw new Error(`Generated ${allQuestions.length} questions instead of ${numberOfQuestions}`);
+        }
+
+        // Store in cache
+        questionsCache.set(cacheKey, allQuestions);
         setTimeout(() => questionsCache.delete(cacheKey), 30 * 60 * 1000);
 
-        res.json({ questions: validatedQuestions });
+        res.json({ questions: allQuestions });
     } catch (error) {
         console.error('MCQ Generation Error:', error);
         res.status(500).json({
@@ -165,7 +128,69 @@ app.post('/api/generate-mcq', async (req, res) => {
     }
 });
 
+async function generateQuestionBatch(topic, subTopic, batchSize) {
+    const prompt = `Generate exactly ${batchSize} multiple choice questions about ${subTopic} in ${topic}. 
+        Each question must be unique and different from others.
+        Format each question exactly as follows, including all properties:
+        {
+            "question": "Write the question here?",
+            "options": ["option a", "option b", "option c", "option d"],
+            "correctAnswer": "exact text of correct option"
+        }
+        Return exactly ${batchSize} questions formatted as a JSON array of objects.`;
 
+    const response = await axios.post(
+        GEMINI_API_URL,
+        {
+            contents: [{
+                parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 1000,
+            }
+        },
+        {
+            timeout: 30000
+        }
+    );
+
+    let questionsText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    // Extract JSON array from response
+    const jsonMatch = questionsText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+        throw new Error('Invalid response format');
+    }
+
+    try {
+        const batchQuestions = JSON.parse(jsonMatch[0]);
+        
+        // Validate each question has required properties
+        const validatedQuestions = batchQuestions.map(q => {
+            if (!q.question || !Array.isArray(q.options) || !q.correctAnswer) {
+                throw new Error('Invalid question format');
+            }
+            return {
+                question: q.question.trim(),
+                options: q.options.map(opt => opt.trim()),
+                correctAnswer: q.correctAnswer.trim()
+            };
+        });
+
+        // Verify batch size
+        if (validatedQuestions.length !== batchSize) {
+            throw new Error(`Generated ${validatedQuestions.length} questions instead of ${batchSize}`);
+        }
+
+        return validatedQuestions;
+    } catch (parseError) {
+        console.error('Batch parsing error:', parseError);
+        throw new Error(`Failed to parse batch: ${parseError.message}`);
+    }
+}
+
+// Server startup and feedback routes remain the same
 app.listen(PORT, async () => {
     console.log(`Server starting on port ${PORT}...`);
     const isConnected = await testApiConnection();
@@ -176,61 +201,55 @@ app.listen(PORT, async () => {
     }
 });
 
-
+// Feedback system initialization
 async function ensureFeedbackFile() {
-  try {
-    await fs.mkdir(feedbackDir, { recursive: true });
     try {
-      await fs.access(feedbackFile);
-    } catch {
-      await fs.writeFile(feedbackFile, '[]');
+        await fs.mkdir(feedbackDir, { recursive: true });
+        try {
+            await fs.access(feedbackFile);
+        } catch {
+            await fs.writeFile(feedbackFile, '[]');
+        }
+    } catch (error) {
+        console.error('Error initializing feedback system:', error);
     }
-  } catch (error) {
-    console.error('Error initializing feedback system:', error);
-  }
 }
 
 ensureFeedbackFile();
 
-// Route to submit feedback
+// Feedback routes
 app.post('/api/feedback', async (req, res) => {
-  try {
-    const { rating, feedback, topicSuggestion, timestamp } = req.body;
+    try {
+        const { rating, feedback, topicSuggestion, timestamp } = req.body;
 
-    if (rating === undefined) {
-      return res.status(400).json({ error: 'Rating is required' });
+        if (rating === undefined) {
+            return res.status(400).json({ error: 'Rating is required' });
+        }
+
+        const feedbackData = {
+            rating,
+            feedback,
+            topicSuggestion,
+            timestamp
+        };
+
+        const existingData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
+        existingData.push(feedbackData);
+        await fs.writeFile(feedbackFile, JSON.stringify(existingData, null, 2));
+
+        res.status(200).json({ message: 'Feedback submitted successfully' });
+    } catch (error) {
+        console.error('Error saving feedback:', error);
+        res.status(500).json({ error: 'Failed to save feedback' });
     }
-
-    const feedbackData = {
-      rating,
-      feedback,
-      topicSuggestion,
-      timestamp
-    };
-
-    // Read existing feedback
-    const existingData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
-    
-    // Add new feedback
-    existingData.push(feedbackData);
-    
-    // Save updated feedback
-    await fs.writeFile(feedbackFile, JSON.stringify(existingData, null, 2));
-
-    res.status(200).json({ message: 'Feedback submitted successfully' });
-  } catch (error) {
-    console.error('Error saving feedback:', error);
-    res.status(500).json({ error: 'Failed to save feedback' });
-  }
 });
 
-// Route to get all feedback (for admin purposes)
 app.get('/api/feedback', async (req, res) => {
-  try {
-    const feedbackData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
-    res.json(feedbackData);
-  } catch (error) {
-    console.error('Error reading feedback:', error);
-    res.status(500).json({ error: 'Failed to retrieve feedback' });
-  }
+    try {
+        const feedbackData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
+        res.json(feedbackData);
+    } catch (error) {
+        console.error('Error reading feedback:', error);
+        res.status(500).json({ error: 'Failed to retrieve feedback' });
+    }
 });
