@@ -135,7 +135,7 @@ async function generateQuestionBatch(topic, subTopic, batchSize) {
         {
             "question": "Write the question here?",
             "options": ["option a", "option b", "option c", "option d"],
-            "correctAnswer": "exact text of correct option with 2 or 3 lines explanation"
+            "correctAnswer": "exact text of correct option"
         }
         Return exactly ${batchSize} questions formatted as a JSON array of objects.`;
 
