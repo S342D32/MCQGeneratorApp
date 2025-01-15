@@ -1,35 +1,17 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+const fs = require('fs').promises;
+const path = require('path');
 
-// Feedback Schema
-const feedbackSchema = new mongoose.Schema({
-    rating: {
-        type: Number,
-        required: true
-    },
-    feedback: String,
-    topicSuggestion: String,
-    timestamp: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-const Feedback = mongoose.model('Feedback', feedbackSchema);
+// Ensure feedback directory exists
+const feedbackDir = path.join(__dirname, 'feedback');
+const feedbackFile = path.join(feedbackDir, 'feedback.json');
 
 // Middleware
 app.use(cors({
@@ -208,7 +190,34 @@ async function generateQuestionBatch(topic, subTopic, batchSize) {
     }
 }
 
-// Updated Feedback routes using MongoDB
+// Server startup and feedback routes remain the same
+app.listen(PORT, async () => {
+    console.log(`Server starting on port ${PORT}...`);
+    const isConnected = await testApiConnection();
+    if (isConnected) {
+        console.log('Server is ready to handle requests');
+    } else {
+        console.log('Server started but API connection test failed - check your API key');
+    }
+});
+
+// Feedback system initialization
+async function ensureFeedbackFile() {
+    try {
+        await fs.mkdir(feedbackDir, { recursive: true });
+        try {
+            await fs.access(feedbackFile);
+        } catch {
+            await fs.writeFile(feedbackFile, '[]');
+        }
+    } catch (error) {
+        console.error('Error initializing feedback system:', error);
+    }
+}
+
+ensureFeedbackFile();
+
+// Feedback routes
 app.post('/api/feedback', async (req, res) => {
     try {
         const { rating, feedback, topicSuggestion, timestamp } = req.body;
@@ -217,14 +226,17 @@ app.post('/api/feedback', async (req, res) => {
             return res.status(400).json({ error: 'Rating is required' });
         }
 
-        const newFeedback = new Feedback({
+        const feedbackData = {
             rating,
             feedback,
             topicSuggestion,
-            timestamp: timestamp || new Date()
-        });
+            timestamp
+        };
 
-        await newFeedback.save();
+        const existingData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
+        existingData.push(feedbackData);
+        await fs.writeFile(feedbackFile, JSON.stringify(existingData, null, 2));
+
         res.status(200).json({ message: 'Feedback submitted successfully' });
     } catch (error) {
         console.error('Error saving feedback:', error);
@@ -234,21 +246,10 @@ app.post('/api/feedback', async (req, res) => {
 
 app.get('/api/feedback', async (req, res) => {
     try {
-        const feedbackData = await Feedback.find().sort({ timestamp: -1 });
+        const feedbackData = JSON.parse(await fs.readFile(feedbackFile, 'utf8'));
         res.json(feedbackData);
     } catch (error) {
-        console.error('Error retrieving feedback:', error);
+        console.error('Error reading feedback:', error);
         res.status(500).json({ error: 'Failed to retrieve feedback' });
-    }
-});
-
-// Server startup
-app.listen(PORT, async () => {
-    console.log(`Server starting on port ${PORT}...`);
-    const isConnected = await testApiConnection();
-    if (isConnected) {
-        console.log('Server is ready to handle requests');
-    } else {
-        console.log('Server started but API connection test failed - check your API key');
     }
 });
