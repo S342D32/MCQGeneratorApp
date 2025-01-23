@@ -146,7 +146,7 @@ async function generateQuestionBatch(topic, subTopic, batchSize) {
                 parts: [{ text: prompt }]
             }],
             generationConfig: {
-                temperature: 0.3,
+                temperature: 1,
                 maxOutputTokens: 1000,
             }
         },
