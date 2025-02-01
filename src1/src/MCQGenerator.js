@@ -17,8 +17,6 @@ const MCQGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [previousScore, setPreviousScore] = useState(null);
-  const [previousTotal, setPreviousTotal] = useState(null);
 
   const topics = {
   'Computer Science': [
