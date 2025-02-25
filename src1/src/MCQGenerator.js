@@ -10,9 +10,12 @@ const MCQGenerator = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [ setRetryMode] = useState(false); // New state for retry mode
+  const [retryMode, setRetryMode] = useState(false); // Fixed: added retryMode state variable
   const [score, setScore] = useState(0);
   const [userName, setUserName] = useState('');
+  // Added for storing previous quiz results
+  const [previousScore, setPreviousScore] = useState(null);
+  const [previousTotal, setPreviousTotal] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -160,8 +163,11 @@ const MCQGenerator = () => {
       });
       setQuestions(response.data.questions);
       setSelectedAnswers(new Array(response.data.questions.length).fill(null));
+      setIsLoading(false); // Fixed: Set loading to false after success
     } catch (error) {
       console.error('Error fetching MCQ questions:', error);
+      setError('Failed to generate questions. Please try again.'); // Fixed: Set error message
+      setIsLoading(false); // Fixed: Set loading to false after error
     }
   };
 
@@ -176,6 +182,8 @@ const MCQGenerator = () => {
     const userScore = selectedAnswers.reduce((acc, answer, index) =>
       answer === correctAnswers[index] ? acc + 1 : acc, 0);
     setScore(userScore);
+    setPreviousScore(userScore); // Store the score for badge display
+    setPreviousTotal(questions.length); // Store total questions for badge display
     setShowResults(true);
   };
 
@@ -186,7 +194,7 @@ const MCQGenerator = () => {
     setSelectedAnswers([]);
     setShowResults(false);
     setRetryMode(false); // Reset retry mode
-    setScore(0);
+    // Don't reset previousScore and previousTotal as we want to keep displaying the badge
     setCurrentQuestionIndex(0);
   };
 
@@ -194,10 +202,11 @@ const MCQGenerator = () => {
     setRetryMode(true); // Enable retry mode
     setShowResults(false); // Hide results
     setCurrentQuestionIndex(0); // Start from the first question
+    setSelectedAnswers(new Array(questions.length).fill(null)); // Reset answers
   };
 
 
-    const renderBadgeSystem = () => (
+  const renderBadgeSystem = () => (
     <div className="mt-6 bg-white rounded-lg shadow-md p-4">
       <h3 className="text-lg font-semibold mb-3">Badge System 🎖️</h3>
       <div className="space-y-3">
@@ -234,9 +243,9 @@ const MCQGenerator = () => {
 
   
 
-   return (
+  return (
     <div className="container mx-auto p-4 max-w-2xl">
-      {/* Always show the badge if there's a previous score */}
+      {/* Only show the badge if there's a previous score */}
       {previousScore !== null && previousTotal !== null && (
         <div className="mb-6">
           <Badge name={userName} score={previousScore} totalQuestions={previousTotal} />
@@ -404,7 +413,12 @@ const MCQGenerator = () => {
             ))}
           </div>
           <div className="mt-6 space-y-3">
-            
+            <button
+              onClick={retryQuiz}
+              className="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 text-sm sm:text-base mb-3"
+            >
+              Retry This Quiz
+            </button>
             <button
               onClick={resetQuiz}
               className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 text-sm sm:text-base"
