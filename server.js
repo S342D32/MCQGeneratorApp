@@ -30,7 +30,7 @@ if (!API_KEY) {
 }
 
 // Correct API URL format for Gemini
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY;
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + API_KEY;
 
 // Common headers for Gemini API
 const getApiHeaders = () => ({
