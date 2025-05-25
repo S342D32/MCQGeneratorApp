@@ -245,12 +245,7 @@ const MCQGenerator = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-      {/* Only show the badge if there's a previous score */}
-      {previousScore !== null && previousTotal !== null && (
-        <div className="mb-6">
-          <Badge name={userName} score={previousScore} totalQuestions={previousTotal} />
-        </div>
-      )}
+     
 
       {!questions.length ? (
         <div className="w-full px-4 sm:px-6 lg:px-8">
