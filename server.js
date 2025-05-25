@@ -15,7 +15,8 @@ const feedbackFile = path.join(feedbackDir, 'feedback.json');
 
 // Middleware
 app.use(cors({
-    origin: 'https://mcqgeneratorapp232.onrender.com',
+    origin: ['https://mcqgeneratorapp232.onrender.com',
+     'http://localhost:3000', ],// React development server
     methods: ['GET', 'POST'],
     credentials: true
 }));
@@ -30,7 +31,8 @@ if (!API_KEY) {
 }
 
 // Correct API URL format for Gemini
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
 // Test API connection on startup
 async function testApiConnection() {
     try {
