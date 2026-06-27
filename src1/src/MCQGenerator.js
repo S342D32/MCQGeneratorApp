@@ -21,7 +21,7 @@ const MCQGenerator = () => {
   const [error, setError] = useState(null);
 
   // Use environment variable or fallback to local HTTP
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.REACT_APP_API_URL';
 
   const topics = {
   'Computer Science': [
