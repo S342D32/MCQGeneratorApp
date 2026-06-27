@@ -13,30 +13,13 @@ const path = require("path");
 const feedbackDir = path.join(__dirname, "feedback");
 const feedbackFile = path.join(feedbackDir, "feedback.json");
 
-// Middleware
-// Middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:3000"];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, postman)
-      if (!origin) return callback(null, true);
-
-      if (
-        allowedOrigins.indexOf(origin) !== -1 ||
-        allowedOrigins.includes("*")
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
     credentials: true,
-  }),
+  })
 );
 app.use(express.json());
 
